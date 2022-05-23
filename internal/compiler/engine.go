@@ -19,6 +19,7 @@ type Compiler struct {
 	result  *Result
 }
 
+// NewCompiler creates a new SQL compiler using the configured and supported database engine in sqlc.[json,yaml]
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	c := &Compiler{conf: conf, combo: combo}
 	switch conf.Engine {
@@ -37,10 +38,12 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	return c
 }
 
+// Catalog returns the current catalog used by the SQL compiler
 func (c *Compiler) Catalog() *catalog.Catalog {
 	return c.catalog
 }
 
+// ParseCatalog generates supported statements and updates the compiler catalog
 func (c *Compiler) ParseCatalog(schema []string) error {
 	return c.parseCatalog(schema)
 }

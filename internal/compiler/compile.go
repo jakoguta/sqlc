@@ -52,7 +52,10 @@ func enumValueName(value string) string {
 	return name
 }
 
-// end copypasta
+// Finds all valid .sql files, removes unsupported statements, then generates supported statements and
+// finally updates the compiler catalog.
+//
+// It accumulates errors found and returns them all when done parsing.
 func (c *Compiler) parseCatalog(schemas []string) error {
 	files, err := sqlpath.Glob(schemas)
 	if err != nil {

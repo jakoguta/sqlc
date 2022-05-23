@@ -251,11 +251,14 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 }
 
 func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+
 	if debug.Traced {
 		defer trace.StartRegion(ctx, "parse").End()
 	}
-	c := compiler.NewCompiler(sql, combo)
-	if err := c.ParseCatalog(sql.Schema); err != nil {
+
+	sqlCompiler := compiler.NewCompiler(sql, combo)
+
+	if err := sqlCompiler.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
@@ -266,10 +269,12 @@ func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo c
 		}
 		return nil, true
 	}
+
 	if parserOpts.Debug.DumpCatalog {
-		debug.Dump(c.Catalog())
+		debug.Dump(sqlCompiler.Catalog())
 	}
-	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
+
+	if err := sqlCompiler.ParseQueries(sql.Queries, parserOpts); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
@@ -280,5 +285,6 @@ func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo c
 		}
 		return nil, true
 	}
-	return c.Result(), false
+
+	return sqlCompiler.Result(), false
 }
