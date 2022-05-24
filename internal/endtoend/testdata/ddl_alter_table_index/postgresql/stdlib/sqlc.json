@@ -4,7 +4,6 @@
     {
       "path": "go",
       "engine": "postgresql",
-      "sql_package": "pgx/v4",
       "name": "querytest",
       "schema": "schema.sql",
       "queries": "query.sql"
