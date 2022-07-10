@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
@@ -25,37 +24,12 @@ type Parser interface {
 	IsReservedKeyword(string) bool
 }
 
-// copied over from gen.go
-func structName(name string) string {
-	out := ""
-	for _, p := range strings.Split(name, "_") {
-		if p == "id" {
-			out += "ID"
-		} else {
-			out += strings.Title(p)
-		}
-	}
-	return out
-}
-
-var identPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
-
-func enumValueName(value string) string {
-	name := ""
-	id := strings.Replace(value, "-", "_", -1)
-	id = strings.Replace(id, ":", "_", -1)
-	id = strings.Replace(id, "/", "_", -1)
-	id = identPattern.ReplaceAllString(id, "")
-	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
-	}
-	return name
-}
-
-// Finds all valid .sql files, removes unsupported statements, then generates supported statements and
-// finally updates the compiler catalog.
+// parseCatalog finds all valid .sql schema files in the provided paths.
+// It removes rollback statements and proceeds to parse the schema.
+// Finally, it generates the Catalog and updates the compiler catalog value.
 //
-// It accumulates errors found and returns them all when done parsing.
+// Errors found during schema file processing are accumulated and returned
+// when parseCatalog completes its execution.
 func (c *Compiler) parseCatalog(schemas []string) error {
 	files, err := sqlpath.Glob(schemas)
 	if err != nil {
@@ -87,6 +61,12 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 	return nil
 }
 
+// parseQueries finds all valid .sql query files in the provided paths.
+// It then proceeds to parse the queries in the query files and generates []*Query,
+// which are added to the returned Result.
+//
+// Errors found during query file processing are accumulated and returned
+// when parseQueries completes its execution.
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	var q []*Query
 	merr := multierr.New()
@@ -129,9 +109,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				set[query.Name] = struct{}{}
 			}
 			query.Filename = filepath.Base(filename)
-			if query != nil {
-				q = append(q, query)
-			}
+			q = append(q, query)
 		}
 	}
 	if len(merr.Errs()) > 0 {

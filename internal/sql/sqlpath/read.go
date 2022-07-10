@@ -10,8 +10,8 @@ import (
 )
 
 // Glob return all valid SQL files found in the listed paths.
-//
-// Valid files include files ending in {.sql}. It omits hidden files, directories and migrations.
+// Valid files include files ending in {.sql}. It omits hidden files,
+// hidden directories and migration rollback files.
 func Glob(paths []string) ([]string, error) {
 	var files []string
 	for _, path := range paths {

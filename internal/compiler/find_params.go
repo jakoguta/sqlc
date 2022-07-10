@@ -15,9 +15,8 @@ func findParameters(root ast.Node) ([]paramRef, error) {
 	if len(*v.errs) > 0 {
 		problems := *v.errs
 		return nil, problems[0]
-	} else {
-		return refs, nil
 	}
+	return refs, nil
 }
 
 type paramRef struct {

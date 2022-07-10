@@ -287,7 +287,7 @@ func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo c
 		defer trace.StartRegion(ctx, "parse").End()
 	}
 
-	sqlCompiler := compiler.NewCompiler(sql, combo)
+	sqlCompiler := compiler.New(sql, combo)
 
 	if err := sqlCompiler.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
